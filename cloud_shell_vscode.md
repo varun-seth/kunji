@@ -1,5 +1,5 @@
 
-
+For free, Google CloudShell gives 5 GB persistent storage space and 50 hours of Computation in a Quad Core machine with 16GB RAM.
 
 ## Using Google CloudShell in Visual Studio Code
 
@@ -52,3 +52,5 @@ example_name123@cloudshell:~$
 
 
 Note: Google Cloud Shell comes with a usage quota of 50 hours per week (at the time of writing this).
+
+Note: If it does not work, try "retry" button a couple of times.
