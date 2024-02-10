@@ -2,7 +2,7 @@
 
 
 ## Installation
-For mac os, use
+For Mac OS, use
 `brew install postgresql`
 
 Suppose I want to work on project named "acme". I want a DB named "acme_db" and a user/role named "acme_user"
