@@ -9,4 +9,12 @@ SELECT datetime('now');
 
 -- Get it in a weird format like dd/mm/yyyy
 SELECT strftime('%d/%m/%Y', 'now');
+
+-- Make an array
+SELECT 
+  id AS Col1, 
+  json_group_array(distinct(name)) AS Col2
+from demo
+
+
 ```
