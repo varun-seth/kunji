@@ -26,11 +26,16 @@ To achieve $O(1)$ time complexity for calculating the weighted average, we can m
 When a new number is added, we will update all these metrics as follows:
 1. **Update Total Weight**: The total weight is sum of weights by discounted by the timestamp of each number. So, if the last_timestamp is $t_0$, last weight was $w_0$ and the new timestamp is $t_1$, the new total weight can be calculated as:
    
-   $$w_1 = w_0 \cdot e^{-\alpha (t_1 - t_0)} + 1$$
+$$w_1 = w_0 \cdot e^{-\alpha (t_1 - t_0)} + 1$$
+
 This essentially means that the weight of the previous average is decayed by the time difference, and we add a weight of 1 for the new number.
 
-1. **Update Weighted Average**: Assuming the last weighted average was $\hat{\mu}_0$, the new weighted average can be calculated as:
+2. **Update Weighted Average**: Assuming the last weighted average was $\hat{\mu}_0$, the new weighted average can be calculated as:
 
-   $$\hat{\mu}_1 = \frac{(w_1 - 1) \cdot \hat{\mu}_0 + x_1}{w_1}$$
+$$\hat{\mu}_1 = \frac{(w_1 - 1) \cdot \hat{\mu}_0 + x_1}{w_1}$$
 
 Where $x_1$ is the new number being added in the stream.
+Notice that this second formula is identical to the case without exponential decay, only the formula for the weight is different.
+
+[Live Demo](https://varun-seth.github.io/kunji/tricks/o1_average/)
+
