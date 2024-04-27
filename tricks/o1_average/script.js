@@ -4,7 +4,8 @@ function getConfigFromURL() {
     return {
         sampleInterval: parseInt(params.get('interval')) || 50,    // ms between samples
         decayFactor: parseFloat(params.get('alpha')) || 0.1,      // alpha in the exponential decay
-        noiseFactor: parseFloat(params.get('noise')) || 1.0       // standard deviation of Gaussian noise
+        noiseFactor: parseFloat(params.get('noise')) || 1.0,      // standard deviation of Gaussian noise
+        maxPoints: parseInt(params.get('maxPoints')) || 1000      // maximum number of points to display
     };
 }
 
@@ -14,6 +15,7 @@ function updateURL(config) {
     params.set('interval', config.sampleInterval);
     params.set('alpha', config.decayFactor);
     params.set('noise', config.noiseFactor);
+    params.set('maxPoints', config.maxPoints);
     const newURL = `${window.location.pathname}?${params.toString()}`;
     window.history.replaceState({}, '', newURL);
 }
@@ -60,6 +62,7 @@ class TimeSeriesVisualizer {
         this.lastCursorY = 50; // Default value in the middle
         this.calculator = new WeightedAverageCalculator(config.decayFactor);
         this.dataGenerationInterval = null;
+        this.totalPointsGenerated = 0; // Track total points ever generated
         
         this.setupChart();
         this.setupControls();
@@ -94,7 +97,15 @@ class TimeSeriesVisualizer {
                 scales: {
                     x: {
                         type: 'linear',
-                        display: true
+                        display: true,
+                        min: 0,
+                        max: config.maxPoints,
+                        ticks: {
+                            maxTicksLimit: 10,
+                            callback: function(value) {
+                                return Math.round(value);  // Ensure whole numbers
+                            }
+                        }
                     },
                     y: {
                         display: true,
@@ -106,7 +117,7 @@ class TimeSeriesVisualizer {
                     annotation: {
                         annotations: {
                             currentAverage: {
-                                type: 'dotted',
+                                type: 'line',
                                 yMin: 0,
                                 yMax: 0,
                                 borderColor: 'rgba(255, 0, 0, 0.7)',
@@ -124,6 +135,7 @@ class TimeSeriesVisualizer {
         document.getElementById('intervalInput').value = config.sampleInterval;
         document.getElementById('alphaInput').value = config.decayFactor;
         document.getElementById('noiseInput').value = config.noiseFactor;
+        document.getElementById('maxPointsInput').value = config.maxPoints;
 
         document.getElementById('intervalInput').addEventListener('change', (e) => {
             config.sampleInterval = parseInt(e.target.value);
@@ -143,6 +155,21 @@ class TimeSeriesVisualizer {
         document.getElementById('noiseInput').addEventListener('change', (e) => {
             config.noiseFactor = parseFloat(e.target.value);
             updateURL(config);
+        });
+
+        document.getElementById('maxPointsInput').addEventListener('change', (e) => {
+            config.maxPoints = parseInt(e.target.value);
+            updateURL(config);
+            this.trimData();
+            
+            // Update x-axis scale when maxPoints changes
+            const minX = Math.max(0, this.totalPointsGenerated - config.maxPoints);
+            const maxX = this.totalPointsGenerated - 1;
+            this.chart.options.scales.x.min = minX;
+            this.chart.options.scales.x.max = maxX;
+            // Ensure ticks stay consistent when maxPoints changes
+            this.chart.options.scales.x.ticks.maxTicksLimit = 10;
+            this.chart.update();
         });
 
         // Setup start/stop controls
@@ -179,9 +206,18 @@ class TimeSeriesVisualizer {
         }
     }
 
+    trimData() {
+        if (this.rawData.length > config.maxPoints) {
+            // Remove excess points
+            const excess = this.rawData.length - config.maxPoints;
+            this.rawData.splice(0, excess);
+            this.averagedData.splice(0, excess);
+        }
+    }
+
     addDataPoint(value) {
         const timestamp = Date.now();
-        const x = this.rawData.length;
+        const x = this.totalPointsGenerated++;  // Use and increment total count
         
         // Add noise if noiseFactor is non-zero
         const noise = config.noiseFactor * generateGaussianNoise();
@@ -190,6 +226,15 @@ class TimeSeriesVisualizer {
         this.rawData.push({ x, y: noisyValue });
         const avgValue = this.calculator.addValue(noisyValue, timestamp);
         this.averagedData.push({ x, y: avgValue });
+        
+        // Trim data if it exceeds maxPoints
+        this.trimData();
+
+        // Update x-axis scale to show the last maxPoints values
+        const minX = Math.max(0, this.totalPointsGenerated - config.maxPoints);
+        const maxX = this.totalPointsGenerated - 1;
+        this.chart.options.scales.x.min = minX;
+        this.chart.options.scales.x.max = maxX;
         
         // Update the horizontal line showing current average
         this.chart.options.plugins.annotation.annotations.currentAverage.yMin = avgValue;
