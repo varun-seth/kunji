@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>O(1) Weighted Average Visualization</title>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+        <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        #controls {
+            padding: 10px 0;
+        }
+        
+        .control-group {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .control-group label {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .control-group input {
+            width: 80px;
+            padding: 4px;
+        }
+        
+        #chartContainer {
+            flex-grow: 1;
+            position: relative;
+            border: 1px solid #ccc;
+            cursor: crosshair;
+        }
+        
+        canvas {
+            position: absolute;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        
+        button {
+            padding: 8px 16px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .info {
+            margin: 10px 0;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+    </head>
+    <body>
+        <div id="controls">
+            <div class="control-group">
+                <label>
+                    Sample Interval (ms):
+                    <input
+                        type="number"
+                        id="intervalInput"
+                        min="10"
+                        max="1000"
+                        step="10"
+                    >
+                </label>
+                <label>
+                    Decay Factor (α):
+                    <input
+                        type="number"
+                        id="alphaInput"
+                        min="0.001"
+                        max="1"
+                        step="0.001"
+                    >
+                </label>
+                <label>
+                    Noise:
+                    <input
+                        type="number"
+                        id="noiseInput"
+                        min="0"
+                        max="20"
+                        step="0.1"
+                    >
+                </label>
+                <button id="startButton">Start</button>
+            </div>
+            <div class="info">
+                Move your cursor up/down in the chart area to control values.
+                Click the Start/Pause button to toggle data collection.
+                Data points are generated every sample interval regardless of cursor movement.
+            </div>
+        </div>
+        <div id="chartContainer">
+            <canvas id="timeSeriesChart"></canvas>
+        </div>
+        <script src="script.js"></script>
+    </body>
+</html>
