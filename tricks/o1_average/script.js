@@ -94,6 +94,47 @@ class TimeSeriesVisualizer {
                 responsive: true,
                 maintainAspectRatio: false,
                 animation: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        align: 'start',
+                        labels: {
+                            usePointStyle: true,
+                            generateLabels: (chart) => {
+                                const vis = window.visualizer;
+                                if (!vis || vis.rawData.length === 0) return [];
+                                
+                                // Format numbers to always show 2 decimal places and pad with spaces
+                                const formatNumber = (num) => num.toFixed(2).padStart(6, ' ');
+                                
+                                const currentY = vis.lastCursorY;
+                                const weightedAvg = vis.averagedData.length > 0
+                                    ? vis.averagedData[vis.averagedData.length - 1].y
+                                    : currentY;
+                                const error = weightedAvg - currentY;
+                                
+                                return [
+                                    { text: `Current Y:   ${formatNumber(currentY)}`, fillStyle: 'blue', strokeStyle: 'blue' },
+                                    { text: `Average:     ${formatNumber(weightedAvg)}`, fillStyle: 'red', strokeStyle: 'red' },
+                                    { text: `Error:       ${formatNumber(error)}`, fillStyle: 'gray', strokeStyle: 'gray' }
+                                ];
+                            },
+                            padding: 15
+                        },
+                        onClick: () => {}, // Disable click handling
+                    },
+                    annotation: {
+                        annotations: {
+                            currentAverage: {
+                                type: 'line',
+                                yMin: 0,
+                                yMax: 0,
+                                borderColor: 'rgba(255, 0, 0, 0.7)',
+                                borderWidth: 1
+                            }
+                        }
+                    }
+                },
                 scales: {
                     x: {
                         type: 'linear',
@@ -111,19 +152,6 @@ class TimeSeriesVisualizer {
                         display: true,
                         min: 0,
                         max: 100
-                    }
-                },
-                plugins: {
-                    annotation: {
-                        annotations: {
-                            currentAverage: {
-                                type: 'line',
-                                yMin: 0,
-                                yMax: 0,
-                                borderColor: 'rgba(255, 0, 0, 0.7)',
-                                borderWidth: 1
-                            }
-                        }
                     }
                 }
             }
@@ -244,7 +272,7 @@ class TimeSeriesVisualizer {
         this.chart.options.plugins.annotation.annotations.currentAverage.yMin = avgValue;
         this.chart.options.plugins.annotation.annotations.currentAverage.yMax = avgValue;
 
-        this.chart.update();
+        this.chart.update('none'); // Use 'none' mode for better performance
     }
 }
 
