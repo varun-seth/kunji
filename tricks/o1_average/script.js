@@ -187,7 +187,7 @@ class TimeSeriesVisualizer {
         document.getElementById('alphaInput').addEventListener('change', (e) => {
             config.decayFactor = parseFloat(e.target.value);
             updateURL(config);
-            this.calculator = new WeightedAverageCalculator(config.decayFactor);
+            this.calculator.alpha = config.decayFactor;
         });
 
         document.getElementById('noiseInput').addEventListener('change', (e) => {

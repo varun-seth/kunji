@@ -41,3 +41,72 @@ Notice that this second formula is identical to the case without exponential dec
 
 
 Note: If $\alpha$ is set to 0, then the weights will not decay and the average will be a simple running average of all points seen so far. If $\alpha$ is set to a very high value, then the average will quickly converge to the most recent number added, effectively ignoring all previous numbers.
+
+## Proof of Correctness
+
+Suppose we have a stream of numbers $x_1, x_2, \ldots, x_n$ with timestamps $t_1, t_2, \ldots, t_n$. The weighted average at time $t_n$ can be expressed as:
+
+$$\hat{\mu}_n = \frac{\sum_{i=1}^{n} (b_{i \to n} \cdot x_i)}{\sum_{i=1}^{n} b_{i \to n}}$$
+
+Where $b_{i \to n}$ is a partial weight of the number $x_i$ (that came at the $ith$ iteration) but evaluated at time $t_n$. Mathematically, we define the partial weight as:
+
+$$b_{i \to j} = e^{-\alpha (t_j - t_i)}$$
+
+
+Now, we define $w_n$ as the total weight of all numbers up to $x_n$ at the time $t_n$.
+
+$$ w_n = \sum_{i=1}^{n} b_{i \to n} = \sum_{i=1}^{n} e^{-\alpha (t_n - t_i)} $$
+
+
+Now, when we add a new number $x_{n+1}$ at time $t_{n+1}$, the new total weight becomes:
+
+$$w_{n+1} = \sum_{i=1}^{n+1} b_{i \to n+1} $$
+
+Let us simplify $b_{i \to n+1}$:
+
+$$b_{i \to n+1} = e^{-\alpha (t_{n+1} - t_i)} = e^{-\alpha (t_{n+1} - t_n)} \cdot e^{-\alpha (t_n - t_i)}$$
+
+$$b_{i \to n+1} = e^{-\alpha (t_{n+1} - t_n)} \cdot b_{i \to n}$$
+
+Substituting this into the total weight formula, we get:
+
+$$w_{n+1} = \sum_{i=1}^{n} e^{-\alpha (t_{n+1} - t_n)} \cdot b_{i \to n} + e^{-\alpha (t_{n+1} - t_{n+1})}$$
+
+
+$$w_{n+1} = \sum_{i=1}^{n} e^{-\alpha (t_{n+1} - t_i)} + e^{-\alpha (t_{n+1} - t_{n+1})} $$
+
+$$w_{n+1} = e^{-\alpha (t_{n+1} - t_n)} \cdot \sum_{i=1}^{n} e^{-\alpha (t_n - t_i)} + 1$$
+
+$$w_{n+1} = e^{-\alpha (t_{n+1} - t_n)} \cdot \sum_{i=1}^{n} b_{i \to n} + 1$$
+
+
+$$w_{n+1} = e^{-\alpha (t_{n+1} - t_n)} \cdot w_n + 1$$
+
+This weight matches the formula we suggested earlier for updating the total weight.
+
+Now, the new weighted average would be:
+
+$$\hat{\mu}_{n+1} = \frac{\sum_{i=1}^{n+1} (b_{i \to n+1} \cdot x_i)}{w_{n+1}}$$
+
+$$\hat{\mu}_{n+1} = \frac{\sum_{i=1}^{n} (b_{i \to n+1} \cdot x_i) + b_{n+1 \to n+1} \cdot x_{n+1}}{w_{n+1}}$$
+
+Where $b_{n+1 \to n+1} = e^{-\alpha (t_{n+1} - t_{n+1})} = 1$.
+
+$$\hat{\mu}_{n+1} = \frac{\sum_{i=1}^{n} (b_{i \to n+1} \cdot x_i) + x_{n+1}}{w_{n+1}}$$
+
+
+Remember that $b_{i \to n+1} = e^{-\alpha (t_{n+1} - t_n)} \cdot b_{i \to n}$, so we can rewrite the numerator as:
+
+$$\hat{\mu}_{n+1} = \frac{ e^{-\alpha (t_{n+1} - t_{n})} \cdot \sum_{i=1}^{n} (b_{i \to n} \cdot x_i) + x_{n+1}}{w_{n+ 1}}$$
+
+Recall that $\hat{\mu}_n = \frac{\sum_{i=1}^{n} (b^{n}_i \cdot x_i)}{w_n}$, so we can rewrite the numerator as:
+
+$$\hat{\mu}_{n+1} = \frac{ e^{-\alpha (t_{n+1} - t_{n})} \cdot w_n \cdot \hat{\mu}_n + x_{n+1}}{w_{n+1}}$$
+
+$$\hat{\mu}_{n+1} = \frac{(w_n \cdot e^{-\alpha (t_{n+1} - t_{n})}) \cdot \hat{\mu}_n + x_{n+1}}{w_{n+1}}$$
+
+$$\hat{\mu}_{n+1} = \frac{(w_{n+1} - 1) \cdot \hat{\mu}_n + x_{n+1}}{w_{n+1}}$$
+
+This matches the formula we derived earlier for updating the weighted average.
+
+
