@@ -1,11 +1,20 @@
 // Parse URL parameters or use defaults
 function getConfigFromURL() {
     const params = new URLSearchParams(window.location.search);
+    
+    // Helper to parse numbers with defaults for invalid/missing values
+    const parseNumberParam = (param, defaultValue) => {
+        const value = params.get(param);
+        if (value === null) return defaultValue;  // Return default if param is missing
+        const parsed = parseFloat(value);
+        return isNaN(parsed) ? defaultValue : parsed;  // Return default only if parsing fails
+    };
+    
     return {
-        sampleInterval: parseInt(params.get('interval')) || 50,    // ms between samples
-        decayFactor: parseFloat(params.get('alpha')) || 0.1,      // alpha in the exponential decay
-        noiseFactor: parseFloat(params.get('noise')) || 1.0,      // standard deviation of Gaussian noise
-        maxPoints: parseInt(params.get('maxPoints')) || 1000      // maximum number of points to display
+        sampleInterval: parseNumberParam('interval', 50),    // ms between samples
+        decayFactor: parseNumberParam('alpha', 0.1),      // alpha in the exponential decay
+        noiseFactor: parseNumberParam('noise', 1.0),      // standard deviation of Gaussian noise
+        maxPoints: parseNumberParam('maxPoints', 1000)      // maximum number of points to display
     };
 }
 
@@ -116,7 +125,8 @@ class TimeSeriesVisualizer {
                                 return [
                                     { text: `Current Y:   ${formatNumber(currentY)}`, fillStyle: 'blue', strokeStyle: 'blue' },
                                     { text: `Average:     ${formatNumber(weightedAvg)}`, fillStyle: 'red', strokeStyle: 'red' },
-                                    { text: `Error:       ${formatNumber(error)}`, fillStyle: 'gray', strokeStyle: 'gray' }
+                                    { text: `Error:       ${formatNumber(error)}`, fillStyle: 'gray', strokeStyle: 'gray' },
+                                    { text: `Weight:      ${formatNumber(vis.calculator.totalWeight)}`, fillStyle: 'black', strokeStyle: 'black' }
                                 ];
                             },
                             padding: 15

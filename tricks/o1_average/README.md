@@ -39,3 +39,5 @@ Notice that this second formula is identical to the case without exponential dec
 
 [Live Demo](https://varun-seth.github.io/kunji/tricks/o1_average/)
 
+
+Note: If $\alpha$ is set to 0, then the weights will not decay and the average will be a simple running average of all points seen so far. If $\alpha$ is set to a very high value, then the average will quickly converge to the most recent number added, effectively ignoring all previous numbers.
