@@ -176,9 +176,13 @@ class TimeSeriesVisualizer {
         document.getElementById('startButton').addEventListener('click', () => this.toggleRecording());
 
         // Track cursor position
-        document.getElementById('chartContainer').addEventListener('mousemove', (e) => {
+        document.getElementById('timeSeriesChart').addEventListener('mousemove', (e) => {
+            const chartArea = this.chart.chartArea;
             const rect = e.target.getBoundingClientRect();
-            this.lastCursorY = 100 * (1 - (e.clientY - rect.top) / rect.height);
+            const y = e.clientY - rect.top;
+            
+            // Convert to chart coordinates
+            this.lastCursorY = this.chart.scales.y.getValueForPixel(y);
         });
     }
 
